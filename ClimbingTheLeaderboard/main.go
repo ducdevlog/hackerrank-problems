@@ -9,36 +9,47 @@ import (
 	"strings"
 )
 
-func climbingLeaderboard(scores []int32, alice []int32) []int32 {
-	var ranks []int32
-	var scoreRanks []int32
-	leaderBoardRank := int32(1)
-	for i:=0; i<len(scores); i++ {
-		if i > 0 && scores[i] < scores[i-1] {
-			leaderBoardRank ++
+func buildLeaderBoard(scores []int32) ([]int32, int)  {
+	leaderBoardIndex := 1
+	leaderBoard := make([]int32, len(scores) + 1)
+	leaderBoard[leaderBoardIndex] = scores[0]
+	for i:=1; i<len(scores); i++ {
+		if scores[i] == scores[i-1] {
+			continue
 		}
-		scoreRanks = append(scoreRanks, leaderBoardRank)
+		leaderBoardIndex ++
+		leaderBoard[leaderBoardIndex] = scores[i]
 	}
+	return leaderBoard, leaderBoardIndex
+}
 
+func climbingLeaderboard(scores []int32, alice []int32) []int32 {
+	leaderBoard, leaderBoardSize := buildLeaderBoard(scores)
+
+	aliceRanks := make([]int32, len(alice))
+	j:=leaderBoardSize
 	for i:=0; i<len(alice); i++ {
-		for j:=len(scores) - 1; j>=0; j-- {
-			if scores[j] > alice[i] {
-				ranks = append(ranks, scoreRanks[j]+1)
-				break
-			} else if scores[j] == alice[i] {
-				ranks = append(ranks, scoreRanks[j])
+		for ; j>0; j-- {
+			if alice[i] < leaderBoard[j] {
+				aliceRanks[i] = int32(j) + 1
 				break
 			}
 		}
-		if i == len(ranks) {
-			ranks = append(ranks, 1)
+		if aliceRanks[i] == 0 {
+			aliceRanks[i] = int32(1)
 		}
 	}
-	return ranks
+	return aliceRanks
 }
 
 func main() {
-	reader := bufio.NewReaderSize(os.Stdin, 1024 * 1024)
+	//file, err := os.Open("/Users/ducnt/workspace/learning/go/hackerank-problems/ClimbingTheLeaderboard/input06.txt")
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//defer file.Close()
+	//reader := bufio.NewReaderSize(file, 2048 * 2048)
+	reader := bufio.NewReaderSize(os.Stdin, 2048 * 2048)
 
 	stdout, err := os.Create(os.Getenv("OUTPUT_PATH"))
 	checkError(err)
